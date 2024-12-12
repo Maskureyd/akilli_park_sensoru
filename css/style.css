@@ -46,3 +46,34 @@ footer {
     color: #fff;
     padding: 1rem;
 }
+
+/* Galeri genel stil */
+.gallery {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+/* Resimler ve videolar için ortak stil */
+.gallery img, .gallery video {
+    width: 300px; /* Genişlik */
+    height: 300px; /* Yükseklik */
+    object-fit: cover; /* Görüntüyü tam sığdırmak için */
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    transition: transform 0.3s;
+}
+
+/* Hover etkisi */
+.gallery img:hover, .gallery video:hover {
+    transform: scale(1.05);
+}
+
+/* Video altına margin ekleyerek boşluk sağla */
+video {
+    margin-bottom: 20px;
+}
+
