@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teknik Detaylar - Akıllı Park Sensörü</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <h1>Teknik Detaylar</h1>
+        <nav>
+            <ul>
+                <li><a href="index.html">Ana Sayfa</a></li>
+                <li><a href="teknik.html">Teknik Detaylar</a></li>
+                <li><a href="surecler.html">Proje Süreçleri</a></li>
+                <li><a href="galeri.html">Galeri</a></li>
+                <li><a href="sunum.html">Sunum ve Rapor</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section>
+            <h2>Proje Tanımı</h2>
+            <p>Bu sistem, Raspberry Pi kullanarak ultrasonik sensörlerle mesafeyi ölçer ve mesafeye bağlı olarak LED'leri ve buzzer'ı kontrol eder. Sistemin amacı, kullanıcıya araç parkı sırasında sesli ve görsel geri bildirim sağlamaktır.</p>
+        </section>
+
+        <section>
+            <h2>Kullanılan Donanımlar</h2>
+            <ul>
+                <li><strong>Raspberry Pi 4</strong></li>
+                <li><strong>HC-SR04 Ultrasonik Sensör</strong> - Mesafe ölçümü için kullanılır.</li>
+                <li><strong>Buzzer</strong> - Sesli uyarı verir.</li>
+                <li><strong>LED'ler</strong> - Görsel uyarı için 3 farklı renk kullanılır:
+                    <ul>
+                        <li>Kırmızı LED - Çok yakın mesafe</li>
+                        <li>Sarı LED - Orta mesafe</li>
+                        <li>Yeşil LED - Güvenli mesafe</li>
+                    </ul>
+                </li>
+                <li><strong>Jumper Kablolar</strong> - Bağlantılar için kullanılır.</li>
+                <li><strong>Breadboard</strong> - Devre bağlantılarını kurmak için.</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>Sistem Çalışma Prensibi</h2>
+            <p>Ultrasonik sensör mesafeyi ölçer ve sonucu milisaniye cinsinden gönderir. Bu veri işlenerek aşağıdaki kurallara göre LED'ler ve buzzer kontrol edilir:</p>
+            <ul>
+                <li>Mesafe < 10 cm: <strong>Kırmızı LED</strong> yanar ve buzzer sürekli çalar.</li>
+                <li>10 ≤ Mesafe < 20 cm: <strong>Sarı LED</strong> yanar ve buzzer kısa aralıklarla çalar.</li>
+                <li>20 ≤ Mesafe ≤ 50 cm: <strong>Yeşil LED</strong> yanar ve buzzer uzun aralıklarla çalar.</li>
+                <li>Mesafe > 50 cm: Tüm LED'ler söner ve buzzer devre dışı kalır.</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>Kod</h2>
+            <pre>
+                <code>
+import RPi.GPIO as GPIO
+import time
+
+# Pin tanımlamaları
+TRIG = 23
+ECHO = 24
+BUZZER = 18
+LEDS = {"RED": 22, "YELLOW": 27, "GREEN": 17}  
+
+# GPIO ayarları
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(TRIG, GPIO.OUT)
+GPIO.setup(ECHO, GPIO.IN)
+GPIO.setup(BUZZER, GPIO.OUT)
+
+for color in LEDS.values():
+    GPIO.setup(color, GPIO.OUT) 
+
+# Mesafe ölçüm fonksiyonu
+def measure_distance():
+    GPIO.output(TRIG, False)
+    time.sleep(0.2)
+
+    GPIO.output(TRIG, True)
+    time.sleep(0.00001)
+    GPIO.output(TRIG, False)
+
+    while GPIO.input(ECHO) == 0:
+        pulse_start = time.time()
+        
+    while GPIO.input(ECHO) == 1:
+        pulse_end = time.time()
+
+    pulse_duration = pulse_end - pulse_start
+    distance = pulse_duration * 17150
+    return round(distance, 2)
+
+# LED ve buzzer kontrol fonksiyonu
+def control_feedback(distance):
+    if distance < 10:
+        GPIO.output(LEDS["RED"], True)
+        GPIO.output(LEDS["YELLOW"], False)
+        GPIO.output(LEDS["GREEN"], False)
+        GPIO.output(BUZZER, True)
+        
+    elif 10 <= distance < 20:
+        GPIO.output(LEDS["RED"], False)
+        GPIO.output(LEDS["YELLOW"], True)
+        GPIO.output(LEDS["GREEN"], False)
+        GPIO.output(BUZZER, True)
+        time.sleep(0.1)
+        GPIO.output(BUZZER, False)
+        
+    elif 20 <= distance <= 50:
+        GPIO.output(LEDS["RED"], False)
+        GPIO.output(LEDS["YELLOW"], False)
+        GPIO.output(LEDS["GREEN"], True)
+        GPIO.output(BUZZER, True)
+        time.sleep(0.5)
+        GPIO.output(BUZZER, False)
+        time.sleep(0.5)
+        
+    else:
+        GPIO.output(LEDS["RED"], False)
+        GPIO.output(LEDS["YELLOW"], False)
+        GPIO.output(LEDS["GREEN"], False)
+        GPIO.output(BUZZER, False)
+
+try:
+    while True:
+        distance = measure_distance()
+        print(f"Mesafe: {distance} cm")
+        control_feedback(distance)
+except KeyboardInterrupt:
+    print("Çıkış yapılıyor...")
+    GPIO.cleanup()
+                </code>
+            </pre>
+        </section>
+    </main>
+
+    <footer>
+        <p>© 2024 Akıllı Park Sensörü Sistemi Ekibi</p>
+    </footer>
+</body>
+</html>
